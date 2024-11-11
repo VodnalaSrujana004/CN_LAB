@@ -59,3 +59,18 @@ void main() {
     printf("%s", b);
 }
 
+
+/*Enter string: haiarchana
+Enter position: 4
+Enter the character: k
+
+Frame after stuffing:
+dlestxhaidlekdleetxarchanadleetx
+
+
+Enter string: haisrujana
+Enter position: 5
+Enter the character: y
+
+Frame after stuffing:
+dlestxhaisdleydleetxrujanadleetx*/
