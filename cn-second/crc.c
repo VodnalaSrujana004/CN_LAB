@@ -74,3 +74,7 @@ int main() {
     return 0;
 }
 
+/*Data: Hello, CRC!
+CRC-12: 0BA
+CRC-16: B612
+CRC-CCITT: CC97*/
