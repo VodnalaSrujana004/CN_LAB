@@ -38,3 +38,16 @@ printf("After stuffing the frame is:");
 for(i=0;i<j;i++)
 printf("%d",b[i]);
 }
+
+/*Enter frame length:10
+Enter input frame (0's & 1's only):1
+0
+1
+0
+1
+1
+1
+1
+1
+1
+After stuffing the frame is:10101111101*/
