@@ -39,7 +39,10 @@ for(i=0;i<j;i++)
 printf("%d",b[i]);
 }
 
-/*Enter frame length:10
+
+
+/*Output 
+*Enter frame length:10
 Enter input frame (0's & 1's only):1
 0
 1
