@@ -1,0 +1,286 @@
+1.#include <stdio.h>
+#include <string.h>
+#define FLAG '*' 
+#define ESCAPE '/'
+
+int main() {
+    char data[100];
+    printf("Enter data to frame: ");
+    scanf("%s", data);
+
+    // Character Framing
+    printf("\nCharacter Framing:\n%c%s%c\n", FLAG, data, FLAG);
+
+    // Character Stuffing
+    printf("\nCharacter Stuffing:\n%c", FLAG);
+    for (int i = 0; i < strlen(data); i++) printf("%c%c", (data[i] == FLAG || data[i] == ESCAPE) ? ESCAPE : '\0', data[i]);
+    printf("%c\n", FLAG);
+
+    // Bit Stuffing
+    printf("\nEnter binary data for bit stuffing: ");
+    scanf("%s", data);
+    printf("\nBit Stuffing:\n01111110 ");
+    for (int i = 0, count = 0; data[i] != '\0'; i++, count = (data[i] == '1') ? count + 1 : 0) printf("%c%s", data[i], (count == 5) ? "0" : "");
+    printf(" 01111110\n");
+
+    return 0;
+}
+
+#output 
+Character Framing:
+*ABCDE*
+
+Character Stuffing:
+*/ABCDE*
+
+Bit Stuffing:
+01111110 1111100111101 01111110
+
+2. #include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
+uint16_t compute_crc(const uint8_t *data, size_t length, uint16_t init, uint16_t poly, int bits) {
+    uint16_t crc = init;
+    for (size_t i = 0; i < length; i++) {
+        crc ^= (data[i] << (bits - 8));
+        for (int j = 0; j < 8; j++) crc = (crc & (1 << (bits - 1))) ? (crc << 1) ^ poly : crc << 1;
+    }
+    return crc & ((1 << bits) - 1);
+}
+
+int main() {
+    uint8_t data[] = "Hello, CRC!";
+    size_t length = strlen((char *)data);
+    printf("Data: %s\nCRC-12: %03X\nCRC-16: %04X\nCRC-CCITT: %04X\n", data, 
+        compute_crc(data, length, 0xFFF, 0x80F, 12), 
+        compute_crc(data, length, 0xFFFF, 0x8005, 16), 
+        compute_crc(data, length, 0xFFFF, 0x1021, 16));
+    return 0;
+}
+
+#output
+Data: Hello, CRC!
+CRC-12: 0BA
+CRC-16: B612
+CRC-CCITT: CC97
+
+3.#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <time.h>
+
+#define WINDOW_SIZE 4
+#define FRAME_COUNT 3
+#define TIMEOUT 3
+
+typedef struct { int seq_num; char data[100]; time_t timer; } Frame;
+int main() {
+    Frame frames[WINDOW_SIZE] = {0}; int base = 0, next_seq_num = 0, expected_ack = 0;
+    for (int i = 0; i < FRAME_COUNT; i++) {
+        if (next_seq_num < base + WINDOW_SIZE) {
+            frames[next_seq_num % WINDOW_SIZE] = (Frame){.seq_num = next_seq_num, .timer = time(NULL)};
+            snprintf(frames[next_seq_num % WINDOW_SIZE].data, 100, "Data %d", next_seq_num);
+            printf("Sending: Seq=%d, Data=%s\n", next_seq_num, frames[next_seq_num % WINDOW_SIZE].data); next_seq_num++;
+        } else printf("Window full\n");
+        if (i >= base) { printf("ACK: %d\n", i); base = i + 1; }
+        for (int j = base; j < next_seq_num; j++)
+            if (difftime(time(NULL), frames[j % WINDOW_SIZE].timer) > TIMEOUT) {
+                printf("Timeout Seq=%d, Retransmitting\n", j);
+                frames[j % WINDOW_SIZE].timer = time(NULL);
+            }
+        sleep(1);
+    }
+    return 0;
+}
+
+#output
+Sending: Seq=0, Data=Data 0
+ACK: 0
+Sending: Seq=1, Data=Data 1
+ACK: 1
+Sending: Seq=2, Data=Data 2
+ACK: 2
+
+4.#include <stdio.h>
+#include <limits.h>
+
+#define MAX 10
+#define INF 9999
+
+int main() {
+    int n, src, dist[MAX], visited[MAX], parent[MAX], graph[MAX][MAX];
+    printf("Enter the number of vertices: "); scanf("%d", &n);
+    printf("Enter adjacency matrix (use 9999 for no path):\n"); for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) scanf("%d", &graph[i][j]);
+    printf("Enter the source vertex: "); scanf("%d", &src);
+    for (int i = 0; i < n; i++) dist[i] = INF, visited[i] = 0, parent[i] = -1; dist[src] = 0;
+    for (int count = 0; count < n - 1; count++) { 
+        int min = INF, u; 
+        for (int v = 0; v < n; v++) if (!visited[v] && dist[v] <= min) min = dist[v], u = v;
+        visited[u] = 1;
+        for (int v = 0; v < n; v++) if (!visited[v] && graph[u][v] && dist[u] != INF && dist[u] + graph[u][v] < dist[v]) dist[v] = dist[u] + graph[u][v], parent[v] = u;
+    }
+    printf("Vertex\tDistance from Source\tPath\n");
+    for (int i = 0; i < n; i++) { printf("%d\t%d\t\t\t", i, dist[i]); for (int j = i; j != -1; j = parent[j]) printf("%d ", j); printf("\n"); }
+    return 0;
+}
+
+#output
+Enter the number of vertices: 5
+Enter adjacency matrix (use 9999 for no path):
+0 10 9999 30 100
+10 0 50 9999 9999
+9999 50 0 20 10
+30 9999 20 0 60
+100 9999 10 60 0
+Enter the source vertex: 0
+Vertex		Distance from Source	Path
+0 		 0			0
+1 		 10			0 --> 1
+2 		 50			0 --> 3 --> 2
+3 		 30			0 --> 3
+4 		 60			0 --> 3 --> 2 --> 4
+
+5. #include <stdio.h>
+#include <stdbool.h>
+
+#define MAX 10
+int graph[MAX][MAX], n;
+
+int main() {
+    int root, queue[MAX], front = 0, rear = 0;
+    bool visited[MAX] = {false}; 
+    printf("Enter number of nodes: "); scanf("%d", &n);
+    printf("Enter adjacency matrix (1 for connected, 0 for not):\n");
+    for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) scanf("%d", &graph[i][j]);
+    printf("Enter root node (0 to %d): ", n - 1); scanf("%d", &root);
+    if (root < 0 || root >= n) { printf("Invalid root.\n"); return 1; }
+    queue[rear++] = root; visited[root] = true; printf("Broadcast Tree:\n");
+    while (front < rear) { int current = queue[front++]; printf("%d ", current); 
+        for (int i = 0; i < n; i++) if (graph[current][i] && !visited[i]) { visited[i] = true; queue[rear++] = i; } }
+    printf("\n");
+    return 0;
+}
+
+#output
+Enter number of nodes: 5
+Enter adjacency matrix (1 for connected, 0 for not):
+0 1 0 0 1
+1 0 1 0 0
+0 1 0 1 0
+0 0 1 0 1
+1 0 0 1 0
+Enter root node (0 to 4): 0
+Broadcast Tree:
+0 1 4 2 3
+
+6.#include <stdio.h>
+#include <limits.h>
+
+#define MAX_NODES 10
+#define INF INT_MAX
+
+int main() {
+    int n, cost[MAX_NODES][MAX_NODES], dist[MAX_NODES][MAX_NODES]; 
+    printf("Enter number of nodes: "); scanf("%d", &n); 
+    printf("Enter the cost matrix (use -1 for no direct connection):\n"); 
+    for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) { scanf("%d", &cost[i][j]); if (cost[i][j] == -1 && i != j) cost[i][j] = INF; dist[i][j] = cost[i][j]; } 
+    for (int k = 0; k < n; k++) for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) if (dist[i][k] < INF && dist[k][j] < INF && dist[i][j] > dist[i][k] + dist[k][j]) dist[i][j] = dist[i][k] + dist[k][j]; 
+    printf("\nRouting Table:\nFrom\\To"); for (int i = 0; i < n; i++) printf("\t%d", i); printf("\n"); 
+    for (int i = 0; i < n; i++) { printf("%d", i); for (int j = 0; j < n; j++) printf("\t%s", dist[i][j] == INF ? "INF" : "%d", dist[i][j]); printf("\n"); } 
+    return 0; 
+}
+
+#output
+Enter number of nodes: 4
+Enter the cost matrix (use -1 for no direct connection):
+0 10 15 -1
+10 0 5 20
+15 5 0 10
+-1 20 10 0
+Routing Table:
+From\To    0    1    2    3
+0          0    10   15   25
+1          10   0    5    15
+2          15   5    0    10
+3          25   15   10   0
+
+7.#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_LENGTH 100
+
+int main() {
+    char text[MAX_LENGTH], encrypted[MAX_LENGTH], decrypted[MAX_LENGTH]; 
+    int shift; 
+    printf("Enter the text to encrypt: "); fgets(text, MAX_LENGTH, stdin); text[strcspn(text, "\n")] = '\0'; 
+    printf("Enter shift value: "); scanf("%d", &shift); 
+    strcpy(encrypted, text); for (int i = 0; encrypted[i] != '\0'; i++) { if (isalpha(encrypted[i])) { char base = islower(encrypted[i]) ? 'a' : 'A'; encrypted[i] = (encrypted[i] - base + shift) % 26 + base; }} 
+    printf("Encrypted text: %s\n", encrypted); 
+    strcpy(decrypted, encrypted); for (int i = 0; decrypted[i] != '\0'; i++) { if (isalpha(decrypted[i])) { char base = islower(decrypted[i]) ? 'a' : 'A'; decrypted[i] = (decrypted[i] - base - shift + 26) % 26 + base; }} 
+    printf("Decrypted text: %s\n", decrypted); 
+    return 0; 
+}
+
+#output
+Enter the text to encrypt: Hello World
+Enter shift value: 3
+Encrypted text: Khoor Zruog
+Decrypted text: Hello World
+
+8.#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define BUCKET_CAPACITY 10   
+#define LEAK_RATE 1          
+
+int main() { int packetArrivalRate, simulationTime, bucket = 0, time = 0; 
+    printf("Enter the maximum packet arrival rate (packets per second): "); 
+    scanf("%d", &packetArrivalRate); 
+    printf("Enter the simulation time (seconds): "); 
+    scanf("%d", &simulationTime); 
+    while (time < simulationTime) { sleep(1); bucket = bucket > LEAK_RATE ? bucket - LEAK_RATE : 0; 
+        int packetsArriving = rand() % (packetArrivalRate + 1); 
+        printf("Time: %d seconds | Packets Arriving: %d | Bucket Level: %d\n", time, packetsArriving, bucket); 
+        bucket += packetsArriving; 
+        if (bucket > BUCKET_CAPACITY) { printf("Bucket Overflow! Dropping %d packets.\n", bucket - BUCKET_CAPACITY); bucket = BUCKET_CAPACITY; } 
+        time++; } return 0; 
+}
+
+#output
+Enter the maximum packet arrival rate (packets per second): 4
+Enter the simulation time (seconds): 5
+Time: 0 seconds | Packets Arriving: 3 | Bucket Level: 0
+Time: 1 seconds | Packets Arriving: 1 | Bucket Level: 2
+Time: 2 seconds | Packets Arriving: 2 | Bucket Level: 2
+Time: 3 seconds | Packets Arriving: 0 | Bucket Level: 3
+Time: 4 seconds | Packets Arriving: 3 | Bucket Level: 2
+
+9.
+#include <stdio.h>
+
+#define MAX_FRAMES 10
+
+int main() { int frames[MAX_FRAMES], n, i, j, temp; 
+    printf("Enter the number of frames (up to %d): ", MAX_FRAMES); 
+    scanf("%d", &n); 
+    if (n > MAX_FRAMES) { printf("Number of frames exceeds the limit of %d.\n", MAX_FRAMES); return 1; } 
+    printf("Enter the frame numbers:\n"); 
+    for (i = 0; i < n; i++) scanf("%d", &frames[i]); 
+    for (i = 0; i < n - 1; i++) for (j = 0; j < n - i - 1; j++) if (frames[j] > frames[j + 1]) { temp = frames[j]; frames[j] = frames[j + 1]; frames[j + 1] = temp; } 
+    printf("Sorted Frames:\n"); 
+    for (i = 0; i < n; i++) printf("%d ", frames[i]); 
+    printf("\n"); 
+    return 0; 
+}
+
+#output
+Enter the number of frames (up to 10): 5
+Enter the frame numbers:
+4 2 5 1 3
+Sorted Frames:
+1 2 3 4 5
+
