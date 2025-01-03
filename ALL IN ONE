@@ -258,9 +258,8 @@ Time: 1 seconds | Packets Arriving: 1 | Bucket Level: 2
 Time: 2 seconds | Packets Arriving: 2 | Bucket Level: 2
 Time: 3 seconds | Packets Arriving: 0 | Bucket Level: 3
 Time: 4 seconds | Packets Arriving: 3 | Bucket Level: 2
-
-9.
-#include <stdio.h>
+--------------------------------------------------------------------------------------------------------------------
+9.#include <stdio.h>
 
 #define MAX_FRAMES 10
 
