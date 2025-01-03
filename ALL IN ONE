@@ -35,7 +35,7 @@ Character Stuffing:
 
 Bit Stuffing:
 01111110 1111100111101 01111110
-
+---------------------------------------------------------------------
 2. #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -64,7 +64,7 @@ Data: Hello, CRC!
 CRC-12: 0BA
 CRC-16: B612
 CRC-CCITT: CC97
-
+--------------------------------------------------------------------------------------------
 3.#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -102,7 +102,7 @@ Sending: Seq=1, Data=Data 1
 ACK: 1
 Sending: Seq=2, Data=Data 2
 ACK: 2
-
+------------------------------------------------------------------------------------------------------
 4.#include <stdio.h>
 #include <limits.h>
 
@@ -141,7 +141,7 @@ Vertex		Distance from Source	Path
 2 		 50			0 --> 3 --> 2
 3 		 30			0 --> 3
 4 		 60			0 --> 3 --> 2 --> 4
-
+-------------------------------------------------------------------------------------------------------
 5. #include <stdio.h>
 #include <stdbool.h>
 
@@ -174,7 +174,7 @@ Enter adjacency matrix (1 for connected, 0 for not):
 Enter root node (0 to 4): 0
 Broadcast Tree:
 0 1 4 2 3
-
+-----------------------------------------------------------------------------------------------------------
 6.#include <stdio.h>
 #include <limits.h>
 
@@ -205,7 +205,7 @@ From\To    0    1    2    3
 1          10   0    5    15
 2          15   5    0    10
 3          25   15   10   0
-
+----------------------------------------------------------------------------------------------------------------
 7.#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
