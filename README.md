@@ -1,1 +1,1 @@
-# CN_LAB
+# CN_LAB Manual designed by me
