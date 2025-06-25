@@ -1,0 +1,665 @@
+Write a Program to Implement the following using Python. 
+
+1)Breadth First Search 
+
+from collections import deque
+class Graph:
+    def __init__(self, vertices):
+        self.V = vertices  
+        self.graph = {} 
+
+    def add_edge(self, u, v):
+        if u not in self.graph:
+            self.graph[u] = []
+        if v not in self.graph:
+            self.graph[v] = []
+        self.graph[u].append(v)
+        self.graph[v].append(u)
+
+    def bfs(self, start):
+        visited = set()  
+        queue = deque([start]) 
+        visited.add(start)
+        while queue:
+            node = queue.popleft()
+            print(node, end=" ")
+            for neighbor in self.graph[node]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+if __name__ == "__main__":
+    g = Graph(6)
+    g.add_edge(0, 1)
+    g.add_edge(0, 2)
+    g.add_edge(1, 3)
+    g.add_edge(1, 4)
+    g.add_edge(2, 5)
+    print("Breadth First Search starting from vertex 0:")
+    g.bfs(0)
+
+2. Depth First Search
+
+class Graph:
+    def __init__(self, vertices):
+        self.V = vertices
+        self.graph = {}
+    def add_edge(self, u, v):
+        if u not in self.graph:
+            self.graph[u] = []
+        if v not in self.graph:
+            self.graph[v] = []
+        self.graph[u].append(v)
+        self.graph[v].append(u)
+    def dfs(self, start):
+        visited = set()  
+        self._dfs_util(start, visited)
+    def _dfs_util(self, node, visited):
+        visited.add(node)
+        print(node, end=" ")
+        for neighbor in self.graph.get(node, []):
+            if neighbor not in visited:
+                self._dfs_util(neighbor, visited)
+if __name__ == "__main__":
+    g = Graph(6)
+    g.add_edge(0, 1)
+    g.add_edge(0, 2)
+    g.add_edge(1, 3)
+    g.add_edge(1, 4)
+    g.add_edge(2, 5)
+    print("Depth First Search starting from vertex 0:")
+    g.dfs(0)
+
+
+3. Tic-Tac-Toe game
+
+def print_board(board):
+    for row in board:
+        print(" | ".join(row))
+        print("-" * 5)
+def check_win(board, player):
+    for i in range(3):
+        if all([cell == player for cell in board[i]]): 
+            return True
+        if all([board[j][i] == player for j in range(3)]):  
+            return True
+
+    if all([board[i][i] == player for i in range(3)]):  
+        return True
+    if all([board[i][2 - i] == player for i in range(3)]): 
+        return True
+
+    return False
+def check_draw(board):
+    return all(cell != " " for row in board for cell in row)
+def play_game():
+    board = [[" " for _ in range(3)] for _ in range(3)]  
+    current_player = "X"  
+    
+    while True:
+        print_board(board)
+        try:
+            row, col = map(int, input(f"Player {current_player}, enter row and column (0-2) separated by space: ").split())
+            if board[row][col] != " ":
+                print("Cell already occupied! Try again.")
+                continue
+        except (ValueError, IndexError):
+            print("Invalid input! Please enter numbers between 0 and 2 for row and column.")
+            continue
+        board[row][col] = current_player
+        if check_win(board, current_player):
+            print_board(board)
+            print(f"Player {current_player} wins!")
+            break
+        elif check_draw(board):
+            print_board(board)
+            print("It's a draw!")
+            break
+        current_player = "O" if current_player == "X" else "X"
+if __name__ == "__main__":
+    play_game()
+
+
+4. 8-Puzzle problem
+
+from collections import deque
+def print_board(board):
+    for row in board:
+        print(" ".join(str(x) for x in row))
+    print()
+def is_goal_state(board):
+    goal = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
+    return board == goal
+def find_empty_space(board):
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == 0:
+                return i, j
+def get_possible_moves(board):
+    moves = []
+    x, y = find_empty_space(board)
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    for dx, dy in directions:
+        new_x, new_y = x + dx, y + dy
+        if 0 <= new_x < 3 and 0 <= new_y < 3: 
+            new_board = [row[:] for row in board]  
+            new_board[x][y], new_board[new_x][new_y] = new_board[new_x][new_y], new_board[x][y]
+            moves.append(new_board)
+
+    return moves
+def bfs(start_board):
+
+    queue = deque([(start_board, [])]) 
+    visited = set()
+
+    while queue:
+        current_board, path = queue.popleft()
+        if is_goal_state(current_board):
+            return path
+
+        visited.add(tuple(map(tuple, current_board)))
+        for move in get_possible_moves(current_board):
+            if tuple(map(tuple, move)) not in visited:
+                queue.append((move, path + [move]))
+
+    return None
+def print_solution(solution):
+    if solution is None:
+        print("No solution found.")
+    else:
+        for step in solution:
+            print_board(step)
+if __name__ == "__main__":
+    start_board = [
+        [1, 2, 3],
+        [5, 6, 0],
+        [7, 8, 4]
+    ]
+    solution = bfs(start_board)
+    print_solution(solution)
+
+
+5. Water-Jug problem 
+
+from collections import deque
+def water_jug_problem(capacity_a, capacity_b, target):
+
+    queue = deque([(0, 0)])
+    visited = set()
+    parent = {} 
+    def add_state(state, prev_state):
+        if state not in visited:
+            visited.add(state)
+            queue.append(state)
+            parent[state] = prev_state
+
+    while queue:
+        jug1, jug2 = queue.popleft()
+        if jug1 == target or jug2 == target:
+            steps = []
+            current_state = (jug1, jug2)
+            while current_state != (0, 0):
+                prev_state = parent[current_state]
+                steps.append(current_state)
+                current_state = prev_state
+            steps.append((0, 0))
+            steps.reverse()  
+            return steps
+        possible_states = [
+            (capacity_a, jug2), 
+            (jug1, capacity_b), 
+            (0, jug2), 
+            (jug1, 0), 
+            (jug1 - min(jug1, capacity_b - jug2), jug2 + min(jug1, capacity_b - jug2)), 
+            (jug1 + min(jug2, capacity_a - jug1), jug2 - min(jug2, capacity_a - jug1)), 
+        ]
+        for state in possible_states:
+            add_state(state, (jug1, jug2))
+
+    return None 
+def print_solution(steps):
+    if steps is None:
+        print("No solution found.")
+    else:
+        print("Steps to reach the target:")
+        for step in steps:
+            print(f"Jug1: {step[0]} liters, Jug2: {step[1]} liters")
+if __name__ == "__main__":
+    capacity_a = 4  
+    capacity_b = 3  
+    target = 2  
+    steps = water_jug_problem(capacity_a, capacity_b, target)
+    print_solution(steps)
+
+6. Travelling Salesman Problem 
+
+import itertools
+def calculate_distance(path, distance_matrix):
+    total_distance = 0
+    for i in range(len(path) - 1):
+        total_distance += distance_matrix[path[i]][path[i + 1]]
+    total_distance += distance_matrix[path[-1]][path[0]] 
+    return total_distance
+def tsp_bruteforce(distance_matrix):
+    n = len(distance_matrix)
+    cities = list(range(n))
+    min_distance = float('inf')
+    best_path = []
+    for perm in itertools.permutations(cities):
+        dist = calculate_distance(perm, distance_matrix)
+        if dist < min_distance:
+            min_distance = dist
+            best_path = perm
+
+    return best_path, min_distance
+if __name__ == "__main__":
+    distance_matrix = [
+        [0, 10, 15, 20, 25],
+        [10, 0, 35, 25, 30],
+        [15, 35, 0, 30, 5],
+        [20, 25, 30, 0, 15],
+        [25, 30, 5, 15, 0]
+    ]
+    
+    best_path, min_distance = tsp_bruteforce(distance_matrix)
+    print(f"Best path: {best_path}")
+    print(f"Minimum distance: {min_distance}")
+
+7. Tower of Hanoi
+ 
+def tower_of_hanoi(n, source, target, auxiliary):
+    if n == 1:
+        print(f"Move disk 1 from {source} to {target}")
+        return
+    tower_of_hanoi(n-1, source, auxiliary, target)
+    print(f"Move disk {n} from {source} to {target}")
+    tower_of_hanoi(n-1, auxiliary, target, source)
+if __name__ == "__main__":
+    n = 3
+    tower_of_hanoi(n, 'A', 'C', 'B')
+
+8. Monkey Banana Problem 
+
+class MonkeyBananaProblem:
+    def __init__(self):
+        self.monkey_position = "ground"
+        self.box_position = "ground"
+        self.banana_position = "high"
+        self.has_banana = False
+
+    def push_box(self):
+        if self.monkey_position == "ground" and self.box_position == "ground":
+            print("Monkey pushes the box under the banana.")
+            self.box_position = "under banana"
+        else:
+            print("Monkey cannot push the box.")
+
+    def climb_box(self):
+        if self.box_position == "under banana" and self.monkey_position == "ground":
+            print("Monkey climbs the box.")
+            self.monkey_position = "on box"
+        else:
+            print("Monkey cannot climb the box.")
+
+    def grab_banana(self):
+        if self.monkey_position == "on box" and self.banana_position == "high":
+            print("Monkey grabs the banana!")
+            self.has_banana = True
+        else:
+            print("Monkey cannot grab the banana.")
+
+    def is_goal_reached(self):
+        return self.has_banana
+if __name__ == "__main__":
+    problem = MonkeyBananaProblem()
+
+    
+    problem.push_box() 
+    problem.climb_box() 
+    problem.grab_banana()  
+
+    if problem.is_goal_reached():
+        print("Goal Reached! The monkey has the banana.")
+    else:
+        print("Goal not reached.")
+
+
+9. Alpha-Beta Pruning 
+
+import math
+
+def alpha_beta(depth, node_index, is_maximizing, values, alpha, beta):
+
+    if depth == 3:
+        return values[node_index]
+
+    if is_maximizing:
+        max_eval = -math.inf
+        for i in range(2):
+            eval = alpha_beta(depth + 1, node_index * 2 + i, False, values, alpha, beta)
+            max_eval = max(max_eval, eval)
+            alpha = max(alpha, eval)
+            if beta <= alpha:
+                break 
+        return max_eval
+    else:
+        min_eval = math.inf
+        for i in range(2):
+            eval = alpha_beta(depth + 1, node_index * 2 + i, True, values, alpha, beta)
+            min_eval = min(min_eval, eval)
+            beta = min(beta, eval)
+            if beta <= alpha:
+                break 
+        return min_eval
+
+values = [3, 5, 6, 9, 1, 2, 0, -1]  
+
+
+best_score = alpha_beta(0, 0, True, values, -math.inf, math.inf)
+print(f"Best value (score) for the maximizing player is: {best_score}")
+
+
+10. 8-Queens Problem 
+
+def printSolution(board):
+    """Print the chessboard configuration."""
+    for row in board:
+        print(" ".join("Q" if col else "." for col in row))
+    print("\n")
+
+def isSafe(board, row, col, n):
+    """Check if placing a queen at board[row][col] is safe."""
+    for i in range(row):
+        if board[i][col]:
+            return False
+    i, j = row, col
+    while i >= 0 and j >= 0:
+        if board[i][j]:
+            return False
+        i -= 1
+        j -= 1
+    i, j = row, col
+    while i >= 0 and j < n:
+        if board[i][j]:
+            return False
+        i -= 1
+        j += 1
+
+    return True
+
+
+def solveNQueens(board, row, n):
+    """Use backtracking to solve the N-Queens problem."""
+    if row == n:
+        printSolution(board)
+        return True
+
+    result = False
+    for col in range(n):
+        if isSafe(board, row, col, n):
+            board[row][col] = 1
+            result = solveNQueens(board, row + 1, n) or result
+            board[row][col] = 0
+
+    return result
+
+def nQueens(n):
+    """Driver function to solve the N-Queens problem."""
+    board = [[0] * n for _ in range(n)]
+    if not solveNQueens(board, 0, n):
+        print("No solution exists.")
+    else:
+        print("Solutions printed above.")
+nQueens(8)
+
+
+
+
+
+
+
+
+
+
+
+
+
+1. Write a python program to compute Central Tendency Measures: Mean, Median, 
+Mode Measure of Dispersion: Variance, Standard Deviation 
+
+
+import statistics
+
+def central_tendency_and_dispersion(data):
+    if not data:
+        return "Dataset is empty."
+
+    mean = statistics.mean(data)
+    median = statistics.median(data)
+
+    try:
+        mode = statistics.mode(data)
+    except statistics.StatisticsError:
+        mode = "No unique mode"
+
+    variance = statistics.variance(data)
+    std_dev = statistics.stdev(data)
+
+    return {
+        "Mean": mean,
+        "Median": median,
+        "Mode": mode,
+        "Variance": variance,
+        "Standard Deviation": std_dev
+    }
+dataset = [10, 20, 30, 40, 50, 20, 10, 30, 20]
+result = central_tendency_and_dispersion(dataset)
+
+for key, value in result.items():
+    print(f"{key}: {value}")
+
+
+4. Write a Python program to implement Simple Linear Regression
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+np.random.seed(42)
+X = 10 * np.random.rand(50) 
+y = 5 * X + np.random.randn(50) * 3 
+
+df = pd.DataFrame({'X': X, 'Y': y})
+X_train, X_test, y_train, y_test = train_test_split(X.reshape(-1,1), y, test_size=0.2, random_state=42)
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+m = model.coef_[0] 
+b = model.intercept_ 
+print(f"Equation of Line: Y = {m:.2f}X + {b:.2f}")
+y_pred = model.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+print(f"Mean Squared Error: {mse:.2f}")
+print(f"R² Score: {r2:.2f}")
+plt.scatter(X_test, y_test, color='blue', label="Actual Data")
+plt.plot(X_test, y_pred, color='red', linewidth=2, label="Regression Line")
+plt.xlabel("X (Independent Variable)")
+plt.ylabel("Y (Dependent Variable)")
+plt.title("Simple Linear Regression")
+plt.legend()
+plt.show()
+
+
+
+5. Implementation of Multiple Linear Regression for House Price Prediction using sklearn 
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+
+data = {
+    'SquareFeet': [1500, 1800, 2400, 3000, 3500, 4000, 4200, 4600, 5000, 5500],
+    'Bedrooms': [3, 3, 4, 4, 5, 5, 5, 6, 6, 7],
+    'HouseAge': [10, 8, 15, 20, 5, 3, 2, 1, 5, 12],
+    'Price': [300000, 350000, 500000, 600000, 650000, 700000, 750000, 800000, 850000, 900000]
+}
+
+df = pd.DataFrame(data)
+
+X = df[['SquareFeet', 'Bedrooms', 'HouseAge']]
+y = df['Price']
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+
+print("Intercept (b0):", model.intercept_)
+print("Coefficients (b1, b2, b3):", model.coef_)
+
+y_pred = model.predict(X_test)
+
+
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+print("Mean Squared Error:", mse)
+print("R² Score:", r2)
+
+
+plt.scatter(y_test, y_pred, color='blue')
+plt.plot(y_test, y_test, color='red', linestyle="dashed")  # Ideal Line
+plt.xlabel("Actual Prices")
+plt.ylabel("Predicted Prices")
+plt.title("Actual vs Predicted House Prices")
+plt.show()
+
+
+6. Implementation of Decision tree using sklearn and its parameter tuning 
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import accuracy_score
+
+from sklearn.datasets import load_iris
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+dt = DecisionTreeClassifier(random_state=42)
+dt.fit(X_train, y_train)
+
+y_pred = dt.predict(X_test)
+
+
+accuracy = accuracy_score(y_test, y_pred)
+print("Decision Tree Accuracy:", accuracy)
+
+
+plt.figure(figsize=(12, 8))
+plot_tree(dt, feature_names=iris.feature_names, class_names=iris.target_names, filled=True)
+plt.show()
+
+
+
+7. Implementation of KNN using sklearn 
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.datasets import load_iris
+
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+knn = KNeighborsClassifier(n_neighbors=3)
+knn.fit(X_train, y_train)
+
+y_pred = knn.predict(X_test)
+
+
+accuracy = accuracy_score(y_test, y_pred)
+print("KNN Accuracy:", accuracy)
+print("Classification Report:\n", classification_report(y_test, y_pred))
+
+
+
+8. Implementation of Logistic Regression using sklearn 
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.datasets import load_iris
+
+
+iris = load_iris()
+X = iris.data[:100]  
+y = iris.target[:100]
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+log_reg = LogisticRegression()
+log_reg.fit(X_train, y_train)
+
+
+y_pred = log_reg.predict(X_test)
+
+
+accuracy = accuracy_score(y_test, y_pred)
+print("Logistic Regression Accuracy:", accuracy)
+print("Classification Report:\n", classification_report(y_test, y_pred))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+
+
+9. Implementation of K-Means Clustering 
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.datasets import make_blobs
+
+
+X, _ = make_blobs(n_samples=300, centers=4, cluster_std=0.6, random_state=42)
+
+kmeans = KMeans(n_clusters=4, random_state=42, n_init=10)
+y_kmeans = kmeans.fit_predict(X)
+
+plt.scatter(X[:, 0], X[:, 1], c=y_kmeans, cmap='viridis', edgecolors='k')
+plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=300, c='red', marker='X', label="Centroids")
+plt.title("K-Means Clustering")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.legend()
+plt.show()
+
+
